@@ -1,5 +1,5 @@
 // app/index.tsx
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -34,6 +34,8 @@ export default function HomeScreen() {
   const [results, setResults] = useState<DictionaryEntry[]>([]);
   const router = useRouter();
 
+  const searchTextBoxRef = useRef(null);
+
   const [pastedText, setPastedText] = useState("");
   const pasteFromClipboard = async () => {
     const clipboardText = await Clipboard.getStringAsync();
@@ -44,9 +46,21 @@ export default function HomeScreen() {
     AppState.currentState
   );
 
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     if (searchTextBoxRef.current) {
+  //       searchTextBoxRef.current?.focus();
+  //     }
+  //   }, [])
+  // );
+
+
   // Use useEffect to set up the AppState listener
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      // if (searchTextBoxRef.current) {
+      //   searchTextBoxRef.current?.focus();
+      // }
       if (appState.match(/inactive|background/) && nextAppState === "active") {
         pasteFromClipboard();
       }
@@ -110,12 +124,14 @@ export default function HomeScreen() {
             }}
           >
             <TextInput
+              ref={searchTextBoxRef}
               placeholder="Search..."
               value={query}
               onChangeText={setQuery}
               onSubmitEditing={handleSearch}
               style={{
                 fontSize: 18,
+                flex: 1,
               }}
             />
             {query.length > 0 ? (
@@ -130,6 +146,7 @@ export default function HomeScreen() {
 
           <Button title="Search" onPress={handleSearch} />
 
+            
           <FlatList
             data={results}
             keyExtractor={(item) => item[0]}
