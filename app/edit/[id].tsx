@@ -11,17 +11,12 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  FlatList,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import dictionaryData from "../../assets/dicts/kanji_bank.json";
+import { DictionaryEntry } from "@/types/dictionaryEntry";
 
-interface DictionaryEntry {
-  0: string;
-  1: string;
-  2: string;
-  3: string;
-  4: string[];
-}
 
 export default function DetailScreen() {
   const { id } = useLocalSearchParams();
@@ -55,8 +50,6 @@ export default function DetailScreen() {
   const catRef = useRef(null);
 
   const scrollToInput = (inputRef) => {
-    // console.error('inputRef', inputRef.current)
-    // console.error('scrollViewRef', scrollViewRef.current)
     if (scrollViewRef.current && inputRef.current) {
       inputRef.current.measureLayout(
         scrollViewRef.current.getInnerViewNode(),
@@ -72,6 +65,8 @@ export default function DetailScreen() {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
   };
+
+  const [extraFields, setExtraFields] = useState([]);
 
   return (
     <KeyboardAvoidingView
@@ -109,15 +104,84 @@ export default function DetailScreen() {
           <Text style={styles.label}>Definitions:</Text>
           <TextInput
             ref={defRef}
-            style={[styles.input, { height: "auto" }]}
+            style={[styles.input, { height: "auto", paddingBottom: 5 }]}
             multiline={true}
-            value={entry[4].join(", ")}
-            onChangeText={(text) => setEntry({ ...entry, 4: text.split(", ") })}
-            // onFocus={() => setTimeout( scrollToBottom, 100)}
-            onFocus={() => setTimeout( ()=>{scrollToInput(defRef)}, 100)}
-            // onFocus={() => scrollToInput(defRef)}
+            value={entry[4]}
+            onChangeText={(text) => setEntry({ ...entry, 4: text })}
+            onFocus={() =>
+              setTimeout(() => {
+                scrollToInput(defRef);
+              }, 100)
+            }
           />
-          <View className="mb-6"><Button title="Save" onPress={handleSave} /></View>
+
+          <FlatList
+            scrollEnabled={false}
+            data={
+              Object.keys(item)?.length > 0
+                ? Object.keys(item)
+                    ?.filter((itemKey) => itemKey >= 6)
+                    .map((itemKey) => {
+                      return { itemKey: itemKey, data: item?.[itemKey] };
+                    })
+                : []
+            }
+            renderItem={({ item: subItem }) => (
+              <View>
+                <Text style={styles.label}>{`Item ${subItem.itemKey}:`}</Text>
+                <TextInput
+                  style={[styles.input, { height: "auto", paddingBottom: 5 }]}
+                  multiline={true}
+                  value={subItem.data}
+                  onChangeText={(text) =>
+                    setEntry({ ...entry, [subItem.itemKey]: text })
+                  }
+                  onFocus={() =>
+                    setTimeout(() => {
+                      scrollToBottom();
+                    }, 100)
+                  }
+                />
+              </View>
+            )}
+          />
+
+          <FlatList
+            scrollEnabled={false}
+            data={extraFields}
+            renderItem={({ item }) => (
+              <View>
+                <Text style={styles.label}>{`Item ${item}:`}</Text>
+                <TextInput
+                  style={[styles.input, { height: "auto", paddingBottom: 5 }]}
+                  multiline={true}
+                  onChangeText={(text) =>
+                    setEntry({ ...entry, [item]: text })
+                  }
+                  onFocus={() =>
+                    setTimeout(() => {
+                      scrollToBottom();
+                    }, 100)
+                  }
+                />
+              </View>
+            )}
+          />
+
+          <View className="mb-6 flex flex-col justify-evenly">
+            <Button title="Save" onPress={handleSave} />
+            <Button
+              title="Add Extra Field"
+              onPress={() => {
+                setExtraFields((state) => {
+                  if (state.length === 0) {
+                    return [Object.keys(item)?.length];
+                  }
+                  return [...state, state[state.length - 1] + 1];
+                });
+              }}
+            />
+          </View>
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

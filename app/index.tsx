@@ -116,16 +116,17 @@ export default function HomeScreen() {
               height: 40,
               borderColor: "gray",
               borderWidth: 1,
-              marginBottom: 20,
+              marginBottom: 10,
               paddingHorizontal: 10,
               justifyContent: "space-between",
               alignItems: "center",
               flexDirection: "row",
+              borderRadius: 4,
             }}
           >
             <TextInput
               ref={searchTextBoxRef}
-              placeholder="Search..."
+              placeholder="漢字検索"
               value={query}
               onChangeText={setQuery}
               onSubmitEditing={handleSearch}
@@ -156,6 +157,7 @@ export default function HomeScreen() {
                   borderColor: "gray",
                   borderWidth: 1,
                   marginBottom: 10,
+                  borderRadius: 4,
                 }}
                 onPress={() => router.push(`/detail/${item[0]}`)}
               >

@@ -1,22 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
   useWindowDimensions,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import dictionaryData from "../../assets/dicts/kanji_bank.json";
 import { WebView } from "react-native-webview";
-
-interface DictionaryEntry {
-  0: string;
-  1: string;
-  2: string;
-  3: string;
-  4: string[];
-}
+import { DictionaryEntry } from "@/types/dictionaryEntry";
 
 export default function DetailScreen() {
   const router = useRouter();
@@ -74,15 +68,11 @@ export default function DetailScreen() {
       </View>
     );
   }
-
-  // const htmlText = item[4].join(", ");
-  const htmlText = splitByNumbering(item?.[4][item[4]?.length - 1])
+  const htmlText = splitByNumbering(item?.[4] || '')
     .map((item) => {
       const formattedString = item
         .replace(/\[b\]/g, "<b>")
         .replace(/\[\/b\]/g, "</b>");
-
-      // console.log(formattedString);
 
       return `<p>${formattedString}</p>`;
     })
@@ -120,48 +110,76 @@ export default function DetailScreen() {
             flexDirection: "row",
           }}
         >
-          <View style={{flex: 1}}>
+          <View style={{ flex: 1 }}>
             <Text
               selectable={true}
               style={{ fontSize: 24, fontWeight: "bold" }}
-              onPress={() => router.push(`/edit/${id}`)}
+              // onPress={() => router.push(`/edit/${id}`)}
             >
               {item[0]}
             </Text>
           </View>
-          <TouchableOpacity className="bg-indigo-500" style={{justifyContent: "center", alignItems: "center", borderRadius: 4, width: 50}} onPress={() => router.push(`/edit/${id}`)}>
-            <Text style={{
-              fontSize: 18,
-              color: "#a5b4fc",
-            }}>Edit</Text>
+          <TouchableOpacity
+            className="bg-indigo-500"
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: 6,
+              width: 70,
+            }}
+            onPress={() => router.push(`/edit/${id}`)}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                color: "#fff",
+                fontWeight: "bold",
+              }}
+            >
+              Edit
+            </Text>
           </TouchableOpacity>
         </View>
-        <Text selectable={true} style={{ fontSize: 18, marginVertical: 10 }}>
+        <Text selectable={true} style={{ fontSize: 18, marginTop: 10 }}>
           {item[1]}
         </Text>
-        <Text selectable={true} style={{ fontSize: 18, marginVertical: 10 }}>
+        <Text selectable={true} style={{ fontSize: 18, marginTop: 10 }}>
           {item[2]}
         </Text>
 
         <View
           style={{
             flex: 1,
+            marginTop: 10,
           }}
         >
           <WebView
-            // ref={webViewRef}
             originWhitelist={["*"]}
-            // source={{ html: htmlText }}
             source={{ html: htmlString }}
-            // source={{ html: '<h1>Hello world</h1>' }}
             style={{
               width: width,
-              height: 600,
+              height: htmlText.length + 50,
             }}
-            javaScriptEnabled
-            domStorageEnabled
           />
         </View>
+
+        <FlatList
+          scrollEnabled={false}
+          data={
+            Object.keys(item)?.length > 0
+              ? Object.keys(item)
+                  ?.filter((itemKey) => itemKey >= 6)
+                  .map((itemKey) => item?.[itemKey])
+              : []
+          }
+          renderItem={({ item: subItem }) => (
+            <View>
+              <Text selectable={true} style={{ fontSize: 18, marginTop: 10 }}>
+                {subItem}
+              </Text>
+            </View>
+          )}
+        />
       </View>
     </ScrollView>
   );
